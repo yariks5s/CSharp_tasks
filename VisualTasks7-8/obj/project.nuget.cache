@@ -1,0 +1,12 @@
+{
+  "version": 2,
+  "dgSpecHash": "3+mYdz8mim0=",
+  "success": true,
+  "projectFilePath": "/Users/yaroslav/c#_labs/VisualTasks7-8/Lab2.csproj",
+  "expectedPackageFiles": [
+    "/Users/yaroslav/.nuget/packages/sixlabors.fonts/2.0.8/sixlabors.fonts.2.0.8.nupkg.sha512",
+    "/Users/yaroslav/.nuget/packages/sixlabors.imagesharp/3.1.6/sixlabors.imagesharp.3.1.6.nupkg.sha512",
+    "/Users/yaroslav/.nuget/packages/sixlabors.imagesharp.drawing/2.1.5/sixlabors.imagesharp.drawing.2.1.5.nupkg.sha512"
+  ],
+  "logs": []
+}

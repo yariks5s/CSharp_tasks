@@ -1,0 +1,16 @@
+@{
+    Layout = null;
+}
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Результат інтегрування (MVC)</title>
+</head>
+<body>
+    <h1>Результат інтегрування методом трапецій (MVC)</h1>
+    <p>Обчислений інтеграл: @ViewBag.Integral</p>
+    <h2>Візуалізація:</h2>
+    <img src="data:image/png;base64,@ViewBag.ChartImage" alt="Integration Chart" /><br />
+    <br /><a href="/Tasks/IntegralMVC">Назад</a> | <a href="/">Меню</a>
+</body>
+</html>
