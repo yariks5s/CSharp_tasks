@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <title>Результати сортування</title>
+    <style>
+        table {
+            border-collapse: collapse;
+            margin: 0 auto;
+        }
+
+        table,
+        th,
+        td {
+            border: 1px solid #333;
+            padding: 8px;
+        }
+
+        th {
+            background: #eee;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Результати сортування</h1>
+    <table>
+        <tr>
+            <th>Метод</th>
+            <th>Відсортований масив</th>
+            <th>Час виконання (мс)</th>
+        </tr>
+        <tr>
+            <td>Thread</td>
+            <td>{{ThreadResult}}</td>
+            <td>{{ThreadTime}}</td>
+        </tr>
+        <tr>
+            <td>Tasks</td>
+            <td>{{TasksResult}}</td>
+            <td>{{TasksTime}}</td>
+        </tr>
+        <tr>
+            <td>TaskFactory</td>
+            <td>{{TaskFactoryResult}}</td>
+            <td>{{TaskFactoryTime}}</td>
+        </tr>
+        <tr>
+            <td>Parallel</td>
+            <td>{{ParallelResult}}</td>
+            <td>{{ParallelTime}}</td>
+        </tr>
+    </table>
+    <br>
+    <a href="/task1">Назад</a> | <a href="/">Меню</a>
+</body>
+
+</html>
