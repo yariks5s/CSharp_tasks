@@ -7,7 +7,7 @@ using SixLabors.ImageSharp.Processing;
 using SixLabors.ImageSharp.Drawing.Processing;
 using SixLabors.ImageSharp.Formats.Png;
 
-namespace MvcTasksApp.Models
+namespace MvcTasksApp.Models.Integrals
 {
     public class TrapezoidalIntegrator
     {

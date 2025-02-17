@@ -1,5 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
-using MvcTasksApp.Models;
+using MvcTasksApp.Services;
 using System;
 using System.Threading.Tasks;
 
@@ -7,6 +7,16 @@ namespace MvcTasksApp.Controllers
 {
     public class TasksController : Controller
     {
+        private readonly IIntegrationService _integrationService;
+        private readonly IBubbleSortService _bubbleSortService;
+
+        // сервіси інжектуються через конструктор
+        public TasksController(IIntegrationService integrationService, IBubbleSortService bubbleSortService)
+        {
+            _integrationService = integrationService;
+            _bubbleSortService = bubbleSortService;
+        }
+
         // Завдання 7: Обчислення інтегралу методом трапецій (MVC)
         [HttpGet]
         public IActionResult IntegralMVC()
@@ -17,14 +27,9 @@ namespace MvcTasksApp.Controllers
         [HttpPost]
         public IActionResult IntegralMVC(double a, double b, int n)
         {
-            // створимо модель інтегратора і виконуємо обчислення
-            var integrator = new TrapezoidalIntegrator(a, b, n);
-            integrator.Compute(Math.Sin);
-
-            // створимо зображення у форматі Base64
-            ViewBag.Integral = integrator.Integral.ToString("F6");
-            ViewBag.ChartImage = integrator.GenerateChartBase64();
-
+            var result = _integrationService.ComputeIntegration(a, b, n);
+            ViewBag.Integral = result.Integral.ToString("F6");
+            ViewBag.ChartImage = result.ChartBase64;
             return View("IntegralMVCResult");
         }
 
@@ -32,7 +37,6 @@ namespace MvcTasksApp.Controllers
         [HttpGet]
         public IActionResult BubbleSortMVC()
         {
-            // це сторінка, що містить тег <img> з src="/Tasks/BubbleSortStream"
             return View();
         }
 
@@ -43,19 +47,14 @@ namespace MvcTasksApp.Controllers
             Response.Headers["Cache-Control"] = "no-cache";
             Response.Headers["Connection"] = "keep-alive";
 
-            // створимо випадковий масив
+            // Генерация случайного массива
             Random rnd = new Random();
             int numBars = 30;
             int[] array = new int[numBars];
             for (int i = 0; i < numBars; i++)
-            {
                 array[i] = rnd.Next(10, 311);
-            }
 
-            // створимо модель аніматора сортування
-            var animator = new BubbleSortAnimator(array);
-
-            await foreach (var frame in animator.AnimateAsync())
+            await foreach (var frame in _bubbleSortService.GetBubbleSortAnimationAsync(array))
             {
                 await WriteImageFrame(frame);
             }

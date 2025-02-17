@@ -9,7 +9,7 @@ using SixLabors.ImageSharp.Processing;
 using SixLabors.ImageSharp.Drawing.Processing;
 using SixLabors.ImageSharp.Formats.Png;
 
-namespace MvcTasksApp.Models
+namespace MvcTasksApp.Models.Sorting
 {
     public class BubbleSortAnimator
     {
@@ -27,7 +27,7 @@ namespace MvcTasksApp.Models
 
         public async IAsyncEnumerable<byte[]> AnimateAsync()
         {
-            // Надсилаємо початковий кадр
+            // відсилаєм початковий кадр
             yield return GenerateChartBytes(array);
 
             int n = array.Length;
@@ -46,7 +46,7 @@ namespace MvcTasksApp.Models
                     }
                 }
             }
-            // Надсилаємо фінальний кадр
+            // відсилаєм фінальний кадр
             yield return GenerateChartBytes(array);
         }
 

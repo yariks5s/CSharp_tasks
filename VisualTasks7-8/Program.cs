@@ -1,8 +1,12 @@
-using Microsoft.AspNetCore.Builder;
-using Microsoft.Extensions.DependencyInjection;
+using MvcTasksApp.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllersWithViews();
+
+// реєструємо  сервіси
+builder.Services.AddScoped<IIntegrationService, IntegrationService>();
+builder.Services.AddScoped<IBubbleSortService, BubbleSortService>();
+
 var app = builder.Build();
 
 app.UseStaticFiles();
