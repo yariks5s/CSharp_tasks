@@ -9,6 +9,10 @@ namespace MyProject.Endpoints
 {
     public static class Task1Endpoints
     {
+        // добавлено: константа для максимального числа потоків та SemaphoreSlim для їх обмеження
+        private const int MAX_THREADS = 4;
+        private static SemaphoreSlim threadLimiter = new SemaphoreSlim(MAX_THREADS);
+
         public static void MapTask1Endpoints(this IEndpointRouteBuilder app)
         {
             // GET – форма введення для завдання 1
@@ -84,12 +88,55 @@ namespace MyProject.Endpoints
                 int threshold = 1000;
                 if (right - left > threshold)
                 {
-                    Thread leftThread = new Thread(() => QuickSortThread(arr, left, pivot - 1));
-                    Thread rightThread = new Thread(() => QuickSortThread(arr, pivot + 1, right));
-                    leftThread.Start();
-                    rightThread.Start();
-                    leftThread.Join();
-                    rightThread.Join();
+                    Thread leftThread = null;
+                    Thread rightThread = null;
+
+                    // пробуємо отримати дозвіл для створення нового потоку для лівої частини
+                    if (threadLimiter.Wait(0))
+                    {
+                        leftThread = new Thread(() =>
+                        {
+                            try
+                            {
+                                QuickSortThread(arr, left, pivot - 1);
+                            }
+                            finally
+                            {
+                                threadLimiter.Release();
+                            }
+                        });
+                        leftThread.Start();
+                    }
+                    else
+                    {
+                        QuickSortThread(arr, left, pivot - 1);
+                    }
+
+                    // дозвіл для створення нового потоку для правої частини
+                    if (threadLimiter.Wait(0))
+                    {
+                        rightThread = new Thread(() =>
+                        {
+                            try
+                            {
+                                QuickSortThread(arr, pivot + 1, right);
+                            }
+                            finally
+                            {
+                                threadLimiter.Release();
+                            }
+                        });
+                        rightThread.Start();
+                    }
+                    else
+                    {
+                        QuickSortThread(arr, pivot + 1, right);
+                    }
+
+                    if (leftThread != null)
+                        leftThread.Join();
+                    if (rightThread != null)
+                        rightThread.Join();
                 }
                 else
                 {
