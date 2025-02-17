@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using MyProject.Domain;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
@@ -31,30 +32,15 @@ namespace MyProject.Endpoints
                 double b = double.Parse(form["b"]);
                 int n = int.Parse(form["n"]);
 
-                double h = (b - a) / n;
-                Func<double, double> f = x => Math.Sin(x);
+                // беремо окрему модель із коремого файлу для обчислення інтегралу методом трапецій
+                var integrator = new TrapezoidalIntegrator(a, b, n);
+                integrator.Compute(Math.Sin);
 
-                double[] xValues = new double[n + 1];
-                double[] yValues = new double[n + 1];
-
-                for (int i = 0; i <= n; i++)
-                {
-                    double x = a + i * h;
-                    xValues[i] = x;
-                    yValues[i] = f(x);
-                }
-
-                double integral = yValues[0] / 2.0 + yValues[n] / 2.0;
-                for (int i = 1; i < n; i++)
-                {
-                    integral += yValues[i];
-                }
-                integral *= h;
-
-                string base64Image = GenerateIntegrationChart(a, b, n, xValues, yValues);
+                // створення графіку інтегрування
+                string base64Image = GenerateIntegrationChart(a, b, n, integrator.XValues, integrator.YValues);
 
                 var resultHtml = await File.ReadAllTextAsync("Views/Task5/compute.html");
-                resultHtml = resultHtml.Replace("{{Integral}}", integral.ToString("F6"))
+                resultHtml = resultHtml.Replace("{{Integral}}", integrator.Integral.ToString("F6"))
                                        .Replace("{{ChartImage}}", base64Image);
                 context.Response.ContentType = "text/html; charset=utf-8";
                 await context.Response.WriteAsync(resultHtml);

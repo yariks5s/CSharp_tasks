@@ -1,14 +1,9 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
-using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.PixelFormats;
-using SixLabors.ImageSharp.Processing;
-using SixLabors.ImageSharp.Formats.Png;
+using MyProject.Domain;
 using System;
 using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
-using SixLabors.ImageSharp.Drawing.Processing;
 
 namespace MyProject.Endpoints
 {
@@ -38,36 +33,14 @@ namespace MyProject.Endpoints
                 for (int i = 0; i < numBars; i++)
                     array[i] = rnd.Next(10, 311);
 
-                // Відправляємо початковий кадр
-                byte[] initialBytes = GenerateBubbleSortChartBytes(array);
-                await WriteImageFrame(context, initialBytes);
+                // створюєм доменну модель для анімації сортування
+                var animator = new BubbleSortAnimator(array);
 
-                // Запускаємо сортування з потоковими оновленнями
-                await BubbleSortStream(context, array);
-            });
-        }
-
-        static async Task BubbleSortStream(HttpContext context, int[] array)
-        {
-            int n = array.Length;
-            for (int i = 0; i < n - 1; i++)
-            {
-                for (int j = 0; j < n - i - 1; j++)
+                await foreach (var frame in animator.AnimateAsync())
                 {
-                    if (array[j] > array[j + 1])
-                    {
-                        int temp = array[j];
-                        array[j] = array[j + 1];
-                        array[j + 1] = temp;
-
-                        byte[] imageBytes = GenerateBubbleSortChartBytes(array);
-                        await WriteImageFrame(context, imageBytes);
-                        await Task.Delay(100);
-                    }
+                    await WriteImageFrame(context, frame);
                 }
-            }
-            byte[] finalBytes = GenerateBubbleSortChartBytes(array);
-            await WriteImageFrame(context, finalBytes);
+            });
         }
 
         static async Task WriteImageFrame(HttpContext context, byte[] imageBytes)
@@ -79,37 +52,6 @@ namespace MyProject.Endpoints
             await context.Response.Body.WriteAsync(imageBytes, 0, imageBytes.Length);
             await context.Response.WriteAsync("\r\n");
             await context.Response.Body.FlushAsync();
-        }
-
-        static byte[] GenerateBubbleSortChartBytes(int[] array)
-        {
-            int width = 600, height = 400;
-            int margin = 20;
-            int n = array.Length;
-            int barWidth = (width - 2 * margin) / n;
-            int maxVal = array.Max();
-
-            using (var image = new Image<Rgba32>(width, height))
-            {
-                image.Mutate(ctx =>
-                {
-                    ctx.Fill(Color.White);
-                    for (int i = 0; i < n; i++)
-                    {
-                        int barHeight = (int)((array[i] / (double)maxVal) * (height - 2 * margin));
-                        int x = margin + i * barWidth;
-                        int y = height - margin - barHeight;
-                        var rect = new SixLabors.ImageSharp.Rectangle(x, y, barWidth - 2, barHeight);
-                        ctx.Fill(Color.SteelBlue, rect);
-                        ctx.Draw(SixLabors.ImageSharp.Drawing.Processing.Pens.Solid(Color.Black, 1f), rect);
-                    }
-                });
-                using (var ms = new MemoryStream())
-                {
-                    image.Save(ms, new PngEncoder());
-                    return ms.ToArray();
-                }
-            }
         }
     }
 }
