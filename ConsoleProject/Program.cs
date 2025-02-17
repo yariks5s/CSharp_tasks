@@ -6,6 +6,10 @@ using System.Threading.Tasks;
 
 class Program
 {
+    // добавлено: константа для максимального числа потоків та SemaphoreSlim для їх обмеження
+    private const int MAX_THREADS = 4;
+    private static SemaphoreSlim threadLimiter = new SemaphoreSlim(MAX_THREADS);
+
     static void Main(string[] args)
     {
 
@@ -64,8 +68,7 @@ class Program
         Console.WriteLine($"Час виконання: {sw.ElapsedMilliseconds} мс");
     }
 
-
-    // Quicksort із використанням класу Thread
+    // Quicksort із використанням класу Thread з обмеженням кількості потоків
     static void QuickSortThread(int[] arr, int left, int right)
     {
         if (left < right)
@@ -74,12 +77,53 @@ class Program
             int threshold = 1000;
             if (right - left > threshold)
             {
-                Thread leftThread = new Thread(() => QuickSortThread(arr, left, pivot - 1));
-                Thread rightThread = new Thread(() => QuickSortThread(arr, pivot + 1, right));
-                leftThread.Start();
-                rightThread.Start();
-                leftThread.Join();
-                rightThread.Join();
+                Thread leftThread = null;
+                Thread rightThread = null;
+
+                // Попробувати отримати дозвіл для створення нового потоку для лівої частини
+                if (threadLimiter.Wait(0))
+                {
+                    leftThread = new Thread(() =>
+                    {
+                        try
+                        {
+                            QuickSortThread(arr, left, pivot - 1);
+                        }
+                        finally
+                        {
+                            threadLimiter.Release();
+                        }
+                    });
+                    leftThread.Start();
+                }
+                else
+                {
+                    QuickSortThread(arr, left, pivot - 1);
+                }
+
+                // дозвіл для створення нового потоку для правої частини
+                if (threadLimiter.Wait(0))
+                {
+                    rightThread = new Thread(() =>
+                    {
+                        try
+                        {
+                            QuickSortThread(arr, pivot + 1, right);
+                        }
+                        finally
+                        {
+                            threadLimiter.Release();
+                        }
+                    });
+                    rightThread.Start();
+                }
+                else
+                    QuickSortThread(arr, pivot + 1, right);
+
+                if (leftThread != null)
+                    leftThread.Join();
+                if (rightThread != null)
+                    rightThread.Join();
             }
             else
             {
@@ -88,7 +132,6 @@ class Program
             }
         }
     }
-
 
     // Quicksort із використанням Tasks
     static async Task QuickSortTasks(int[] arr, int left, int right)
@@ -133,7 +176,6 @@ class Program
         return Task.CompletedTask;
     }
 
-
     // Quicksort із використанням Parallel
     static void QuickSortParallel(int[] arr, int left, int right)
     {
@@ -172,10 +214,8 @@ class Program
         }
         Swap(arr, i + 1, right);
 
-
         return i + 1;
     }
-
 
     static void Swap(int[] arr, int i, int j)
     {
